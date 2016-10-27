@@ -1,4 +1,6 @@
-1.定义
+# 	Retrofit 2.0 #
+
+## 1.定义 ##
 
 官方的Retrofit主页是这样描述它的
     
@@ -6,9 +8,9 @@
 
 >用于Android和Java的一个类型安全(type-safe)的REST客户端
 
-你将会用注解去描述HTTP请求，同时Retrofit默认集成URL参数替换和查询参数.除此之外它还支持 Multipart请求和文件上传。
+你可以使用注解去描述HTTP请求，同时Retrofit默认集成URL参数替换和查询参数.除此之外它还支持 Multipart请求和文件上传。
 
-2.使用
+## 2.使用 ##
 
 注意这个任务是网络任务，不要忘记给程序加入网络权限
 
@@ -267,7 +269,7 @@ ApiStores
 	    .client(client)						//设置client
 	    .build();
 
-3 Interceptor
+## 3 Interceptor ##
 	
 >在使用Android retrofit+rxjava时，想获知网络请求的一些参数，方便调试，比如：请求地址、请求响应时间、请求响应消息体等内容，虽然部分可以通过每个接口进行获知，但是这样极其不方便，可以使用拦截器来做统一的操作。
 
@@ -283,7 +285,7 @@ ApiStores
                 .addInterceptor(interceptor)	//设置应用拦截器
                 .build();
 
-4.Cache
+## 4.Cache ##
 
 >开启OKHttp缓存： 
 
@@ -293,7 +295,7 @@ ApiStores
 	client.setCache(new Cache(httpCacheDirectory,10 * 1024 * 1024));
 
 
-5:引用
+## 5:References ##
 
 
 
@@ -304,5 +306,6 @@ ApiStores
 3. URL wikipedia: 		[https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6](https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6 "URL wikipedia: ")
 
 4. Http Caching:		[https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=zh-cn](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=zh-cn "Http Cache")
-5. 
+
+5. 四种常见的 POST 提交数据方式		[https://imququ.com/post/four-ways-to-post-data-in-http.html](https://imququ.com/post/four-ways-to-post-data-in-http.html "四种常见的 POST 提交数据方式") 
 
