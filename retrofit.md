@@ -201,12 +201,40 @@ ApiStores
 	   }
 
 
->上传文件
+>Url encode 
+
+POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，使用@Field個別指定
+	
+	@POST("/articles/{article_id}/comments")
+	@FormUrlEncoded
+	Comment create(
+    @Path("article_id") int articleId,
+    @Field("rating") int rating,
+    @Field("content") String content
+	);
+	
+POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，參數也可用@Body傳
+
+	@POST("/articles/{article_id}/comments")
+	@FormUrlEncoded
+	Comment create(
+	    @Path("article_id") int articleId,
+	    @Body Comment comment
+	);
 
 
-	//todo
 
->
+>POST or PUT 用@Multipart來上傳檔案
+	
+	@PUT("/me")
+	@Multipart
+	Me update(
+	    @Part("display_name") String displayName,
+	    @Part("avatar") TypedFile avatar
+	);
+
+
+更详细的信息，请点击：[http://www.chenkaihua.com/2016/04/02/retrofit2-upload-multipart-files/](http://www.chenkaihua.com/2016/04/02/retrofit2-upload-multipart-files/)
 
 更多更有效的 Converters
 	
@@ -309,5 +337,8 @@ ApiStores
 4. Http Caching:		[https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=zh-cn](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=zh-cn "Http Cache")
 
 5. 四种常见的 POST 提交数据方式		[https://imququ.com/post/four-ways-to-post-data-in-http.html](https://imququ.com/post/four-ways-to-post-data-in-http.html "四种常见的 POST 提交数据方式") 
+
+
+6. Blog				 [ http://wuxiaolong.me/2016/01/15/retrofit/]( http://wuxiaolong.me/2016/01/15/retrofit/ "Blog")
 
 6. URL wikipedia: 		[https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6](https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6 "URL wikipedia: ")
