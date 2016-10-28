@@ -356,7 +356,7 @@ POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，參數也可用
 	File httpCacheDirectory = new File(UIUtils.getContext().getExternalCacheDir(), "xxx"); 
 	client.setCache(new Cache(httpCacheDirectory,10 * 1024 * 1024));
 
-## 5.PROGUARD ##
+## 5.Proguard ##
 
 >如果你在你的代码里使用代码混淆机制,请在你的配置里添加下面几行.
 	
