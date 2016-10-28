@@ -26,6 +26,9 @@ build.gradle
  	}
      
 
+`Retrofit` 需要最低`JDK 1.7` 和 `Android 2.3`.
+
+
 
 retfofit 使用注解的方式定义API 
 
@@ -245,6 +248,29 @@ POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，參數也可用
 更详细的信息，请点击：[http://www.chenkaihua.com/2016/04/02/retrofit2-upload-multipart-files/](http://www.chenkaihua.com/2016/04/02/retrofit2-upload-multipart-files/)
 
 更多更有效的 Converters
+
+>默认情况下，`Retrofit` 只能反序列化`HTTP` body到`OKHTTP`的`ResponseBody`类型。并且`OKHTTP`只接受`Retrifit` `@Body`类型的`RequestBody`
+>可以添加`Converter`转换器来支持其他的类型，6个相似的兼容流行的序列化库模块可以供使用。
+	
+	Gson: com.squareup.retrofit2:converter-gson
+	Jackson: com.squareup.retrofit2:converter-jackson	
+	Moshi: com.squareup.retrofit2:converter-moshi
+	Protobuf: com.squareup.retrofit2:converter-protobuf
+	Wire: com.squareup.retrofit2:converter-wire
+	Simple XML: com.squareup.retrofit2:converter-simplexml	
+	Scalars (primitives, boxed, and String): com.squareup.retrofit2:converter-scalars
+ 	
+例子:
+
+	interface which uses Gson for its deserialization.
+	
+	Retrofit retrofit = new Retrofit.Builder()
+	    .baseUrl("https://api.github.com")
+	    .addConverterFactory(GsonConverterFactory.create())
+	    .build();
+	
+	GitHubService service = retrofit.create(GitHubService.class);
+
 	
 >Retrofit 1 里有一个 converter 的问题。多数人可能没遇到过，是库内部的一个问题。在 Retrofit 2 里，已经解决了这个问题，同时开始支持多种 Converter 并存。
 
@@ -330,8 +356,22 @@ POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，參數也可用
 	File httpCacheDirectory = new File(UIUtils.getContext().getExternalCacheDir(), "xxx"); 
 	client.setCache(new Cache(httpCacheDirectory,10 * 1024 * 1024));
 
+## 5.PROGUARD ##
 
-## 5:References ##
+>如果你在你的代码里使用代码混淆机制,请在你的配置里添加下面几行.
+	
+	# Platform calls Class.forName on types which do not exist on Android to determine platform.
+	-dontnote retrofit2.Platform
+	# Platform used when running on RoboVM on iOS. Will not be used at runtime.
+	-dontnote retrofit2.Platform$IOS$MainThreadExecutor
+	# Platform used when running on Java 8 VMs. Will not be used at runtime.
+	-dontwarn retrofit2.Platform$Java8
+	# Retain generic type information for use by reflection by converters and adapters.
+	-keepattributes Signature
+	# Retain declared checked exceptions for use by a Proxy instance.
+	-keepattributes Exceptions
+
+## 6:References ##
 
 
 
