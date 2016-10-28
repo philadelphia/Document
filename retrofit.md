@@ -109,7 +109,13 @@ ApiStores
 	public interface ApiStores {
 		@GET("http://ip.taobao.com/service/getIpInfo.php")
 		Call<ResponseBody> getWeather(@Query("ip") String ip);
-	}
+
+	
+复杂的查询参数也可以使用Map。
+
+
+	@GET("group/{id}/users")
+	Call<List<User>> groupList(@Path("id") int groupId, @QueryMap Map<String, String> options);
 
 >Headers
 
@@ -151,7 +157,9 @@ ApiStores
 	public interface ApiStores {
         @POST("client/shipper/getCarType")
         Call<ResponseBody> getCarType(@Body ApiInfo apiInfo);
-    }
+	   }
+
+这个`Object`将被`Retrofit`对象所指定的`Converter`所转换，如果没有指定转换器，只能使用`RequestBody`来定义参数。
 
 建立Bean
 
