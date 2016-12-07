@@ -371,7 +371,16 @@ POST or PUT Url encode 過的表單資料，用@FormUrlEncoded，參數也可用
 	# Retain declared checked exceptions for use by a Proxy instance.
 	-keepattributes Exceptions
 
-## 6:References ##
+
+## 6 Nitoice ##
+	
+ >Retrofit 在请求失败时依然会回调 `onResponse()`方法。及时response code不是200依然会回调一下方法，需要注意。
+	
+	 public void onResponse(Call<LoginResult> call, Response<LoginResult> response) {
+		 
+	}
+
+## 7:References ##
 
 
 
