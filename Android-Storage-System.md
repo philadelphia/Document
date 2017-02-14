@@ -1,8 +1,14 @@
 # Android 中内部存储和外部存储分析 #
 
 Android系统存储相关有这样几个概念，内存，内部存储，外部存储
-	内存，
-	英文中称作memory，
+	
+内存，RAM ，在移动设备中做系统运行用
+
+	随机存储器，Read Access Memory
+
+存储器， ROM，在移动设备中做数据存储用
+
+	只读存储器，Read Only Memory
 
 >内部存储 `InternalStorage`
 >
