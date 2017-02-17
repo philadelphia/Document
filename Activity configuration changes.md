@@ -50,7 +50,12 @@ Configuration 对象代表所有当前配置，而不仅仅是已经变更的配
 >
 >`locale|layoutDirection`---系统语言改变
 
+在AndroidManifest.xml中通过配置android:configuration的方法来防止Activity被销毁并重建为什么不被推荐,具体原因参见：
+
+[http://blog.csdn.net/aliaooooo/article/details/23606179?spm=5176.100239.blogcont32546.102.ySmWMr&utm_source=tuicool](http://blog.csdn.net/aliaooooo/article/details/23606179?spm=5176.100239.blogcont32546.102.ySmWMr&utm_source=tuicool)
 
 参考
    
 1. Android Configuration changes:[https://developer.android.com/guide/topics/resources/runtime-changes.html](https://developer.android.com/guide/topics/resources/runtime-changes.html "Android Configuration changes")
+
+2. [ http://blog.csdn.net/aliaooooo/article/details/23606179?spm=5176.100239.blogcont32546.102.ySmWMr&utm_source=tuicool ](http://blog.csdn.net/aliaooooo/article/details/23606179?spm=5176.100239.blogcont32546.102.ySmWMr&utm_source=tuicool)
