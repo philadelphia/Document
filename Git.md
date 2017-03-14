@@ -20,3 +20,10 @@
 增加远程地址的时候带上密码也是可以的。(推荐)
 
     http://yourname:password@github.com/projectname.git
+
+## 刪除遠端分支 ##
+如果不再需要某個遠端分支了，比如搞定了某個特性並把它合併進了遠端的 master 分支（或任何其他存放穩定代碼的分支），可以用這個非常無厘頭的語法來刪除它：git push [遠程名] :[分支名]。如果想在服务器上刪除 serverfix 分支，执行下面的命令：
+
+	$ git push origin :serverfix
+	To git@github.com:schacon/simplegit.git
+	 - [deleted] serverfix
