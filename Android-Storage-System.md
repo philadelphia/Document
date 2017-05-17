@@ -53,6 +53,17 @@ data文件夹就是我们常说的内部存储，当我们打开data文件夹之
 外部存储才是我们平时操作最多的，外部存储一般就是我们上面看到的storage文件夹，当然也有可能是mnt文件夹，这个不同厂家有可能不一样。
 一般来说，在storage文件夹中有一个sdcard文件夹，这个文件夹中的文件又分为两类，一类是公有目录，还有一类是私有目录，其中的公有目录有九大类，比如`DCIM`、`MUSIC`、`Ringtons`、`Pictures`、`Alarms`,`Movies`、`Documents`、`Notifications`等这种系统为我们创建的文件夹，私有目录就是`Android`这个文件夹，这个文件夹打开之后里边有两个文件夹：`data`，`media`，打开这个data文件夹，里边有许多包名组成的文件夹。每个包文件夹下又包含两个文件夹：`cache` 和`files`
 
+			DIRECTORY_MUSIC,
+            DIRECTORY_PODCASTS,
+            DIRECTORY_RINGTONES,
+            DIRECTORY_ALARMS,
+            DIRECTORY_NOTIFICATIONS,
+            DIRECTORY_PICTURES,
+            DIRECTORY_MOVIES,
+            DIRECTORY_DOWNLOADS,
+            DIRECTORY_DCIM,
+            DIRECTORY_DOCUMENTS
+以上全都是Environment类中定义的静态变量
 ## 3.操作存储空间 ##
 首先，经过上面的分析，大家已经明白了，什么是内部存储，什么是外部存储，以及这两种存储方式分别存储在什么位置，一般来说，我们不会自己去操作内部存储空间，没有root权限的话，我们也没法操作内部存储空间，事实上内部存储主要是由系统来维护的。不过在代码中我们是可以访问到这个文件夹的。由于内部存储空间有限，在开发中我们一般都是操作外部存储空间，Google官方建议我们App的数据应该存储在外部存储的私有目录中该App的包名下，这样当用户卸载掉App之后，相关的数据会一并删除，如果你直接在/storage/sdcard目录下创建了一个应用的文件夹，那么当你删除应用的时候，这个文件夹就不会被删除。
 经过以上的介绍，我们可以总结出下面一个表格：
