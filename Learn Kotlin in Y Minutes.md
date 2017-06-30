@@ -378,19 +378,18 @@ Kotlin程序的入口是一个名叫main的函数，该函数的参数为一个�
 	    A, B, C
 	}
 
----
+##  ##
 
-	/*
-	The "object" keyword 可以用了创建一个单例对象，我们不能实例化它，但是我们可以使用它的名字引用它到一个唯一的实例
-	这与Scale单例对象一样.
-	*/
+"object" keyword 可以用了创建一个单例对象，我们不能实例化它，但是我们可以使用它的名字引用它到一个唯一的实例
+这与Scale单例对象一样.
+
 	object ObjectExample {
 	    fun hello(): String {
 	        return "hello"
 	    }
 	}
 
------------
+---
 	fun useObject() {
     ObjectExample.hello()
     val someRef: Any = ObjectExample // we use objects name just as is
