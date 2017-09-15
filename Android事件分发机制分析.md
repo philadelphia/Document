@@ -102,3 +102,41 @@ dispatchTouchEvent()方法也会返回false，事件就不会往下分发了，�
 ![](http://img.blog.csdn.net/20130629200236578?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvc2lueXU4OTA4MDc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 
 从图中可以看出当ViewGroup分发事件的时候先调用自己的拦截方法，如果拦截方法返回了true，那么事件就不在向下传递给view了。然后ViewGroup就开始自己处理事件了。如果ViewGroup拦截方法返回了false，那么事件就会向下传递给view，然后view开始调用自己的分发方法，然后调用自己的事件处理方法。
+
+## 总结 ##
+如果View设置了`setOnTouchListener()`方法和`setOnClickListener()`方法，那默认情况下onTouch方法会先于onClick方法调用。
+  
+	  button.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.i(TAG, "button------onTouch: " + event.getAction());
+                return false;
+            }
+        });
+
+	
+	button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "button --- onClick: ");
+            }
+        });
+
+
+    09-15 14:08:15.184 27948-27948/com.example.drawerlayoutdemo I/MainActivity: button------onTouch: 0(Down)
+	09-15 14:08:15.254 27948-27948/com.example.drawerlayoutdemo I/MainActivity: button------onTouch: 1(Up)
+	09-15 14:08:15.273 27948-27948/com.example.drawerlayoutdemo I/MainActivity: button --- onClick:(onClick)
+
+但是如果在OnTouch方法里面返回true的话，就代表消费了事件，该事件不在往下分发，所以View的onClick方法就不会被调用了。
+
+
+因为如果在OnTouch方法里面返回true的话，就代表消费了事件，该事件不在往下分发，所以View的onClick方法就不会被调用了。
+只有返回false的话，才会传递到onClick方法（才会传递UP Action）。
+
+1:	如果`setOnTouchListener`中的`onTouch`方法返回`true`的话，那么View里面的`onTouchEvent`方法就不会被调用了。
+    
+顺序：View-`dispatchTouchEvent`--`onTouchListener`---return false的话调用---`onTouchEvent`
+
+2: 如果View为Disabled。则：`OntouchListener`里面的方法不会执行。但是会执行`OnTouchEvent(event)`方法
+
+3： onTouchEvent方法中的ACTION_UP分支中触发onClick方法。
