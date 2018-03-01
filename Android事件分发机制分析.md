@@ -104,7 +104,8 @@ dispatchTouchEvent()方法也会返回false，事件就不会往下分发了，�
 从图中可以看出当ViewGroup分发事件的时候先调用自己的拦截方法，如果拦截方法返回了true，那么事件就不在向下传递给view了。然后ViewGroup就开始自己处理事件了。如果ViewGroup拦截方法返回了false，那么事件就会向下传递给view，然后view开始调用自己的分发方法，然后调用自己的事件处理方法。
 
 ## 总结 ##
-如果View设置了`setOnTouchListener()`方法和`setOnClickListener()`方法，那默认情况下onTouch方法会先于onClick方法调用。
+如果View设置了`setOnTouchListener()`方法和`setOnLongClick()`和 `setOnClickListener()`方法，那默认情况下onTouch方法会先于
+`onClick()`, `onLongClick()`方法调用。
   
 	  button.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -127,16 +128,78 @@ dispatchTouchEvent()方法也会返回false，事件就不会往下分发了，�
 	09-15 14:08:15.254 27948-27948/com.example.drawerlayoutdemo I/MainActivity: button------onTouch: 1(Up)
 	09-15 14:08:15.273 27948-27948/com.example.drawerlayoutdemo I/MainActivity: button --- onClick:(onClick)
 
-但是如果在OnTouch方法里面返回true的话，就代表消费了事件，该事件不在往下分发，所以View的onClick方法就不会被调用了。
+----
+ view的`dispatchTouchEvent`方法（精简后代码）。
+
+		public boolean dispatchTouchEvent(MotionEvent event) {
+	    ...
+	    boolean result = false;	// result 为返回值，主要作用是告诉调用者事件是否已经被消费。
+	    if (onFilterTouchEventForSecurity(event)) {
+	        ListenerInfo li = mListenerInfo;
+	        /** 
+	         * 如果设置了OnTouchListener，并且当前 View 可点击，就调用监听器的 onTouch 方法，
+	         * 如果 onTouch 方法返回值为 true，就设置 result 为 true。
+	         */
+	        if (li != null && li.mOnTouchListener != null
+	                && (mViewFlags & ENABLED_MASK) == ENABLED
+	                && li.mOnTouchListener.onTouch(this, event)) {
+	            result = true;
+	        }
+	      
+	        /** 
+	         * 如果 result 为 false，则调用自身的 onTouchEvent。
+	         * 如果 onTouchEvent 返回值为 true，则设置 result 为 true。
+	         */
+	        if (!result && onTouchEvent(event)) {
+	            result = true;
+	        }
+	    }
+	    ...
+	    return result;
+	}	
+
+可以看出如果设置了`onTouchListener`的话。优先调用`onTouchListener`的`onTouch()`方法。
+但是如果在OnTouch方法里面返回true的话，就代表消费了事件，该事件不在往下分发，所以View的 `onClick`，`onLongClick` 方法就不会被调用了。因为`onClick()`and `onLongClick（）`是在view的`onTouchevent()`方法中调用的。
+如果`onTouchListener`的`onTouch()`返回false的话。才会调用view的`onTouchEvent(event)`方法。
+
+		public boolean onTouchEvent(MotionEvent event) {
+	    ...
+	    final int action = event.getAction();
+	  	// 检查各种 clickable
+	    if (((viewFlags & CLICKABLE) == CLICKABLE ||
+	            (viewFlags & LONG_CLICKABLE) == LONG_CLICKABLE) ||
+	            (viewFlags & CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE) {
+	        switch (action) {
+	            case MotionEvent.ACTION_UP:
+	                ...
+	                removeLongPressCallback();  // 移除长按
+	                ...
+	                performClick();             // 检查单击
+	                ...
+	                break;
+	            case MotionEvent.ACTION_DOWN:
+	                ...
+	                checkForLongClick(0);       // 检测长按
+	                ...
+	                break;
+	            ...
+	        }
+	        return true;                        // ◀︎表示事件被消费
+	    }
+	    return false;
+	}
 
 
-因为如果在OnTouch方法里面返回true的话，就代表消费了事件，该事件不在往下分发，所以View的onClick方法就不会被调用了。
-只有返回false的话，才会传递到onClick方法（才会传递UP Action）。
+从View的`onTouchevent（）`方法中可以看出。
+如果view设置了`clickable`,`longClickable`，`contextClickable`属性中的任何一个。
+或者设置了 `onClickListener`，`onLongClickListener`，`onContextClickListener`中的任何一个
+那个该view就会消费事件。不然不消费事件。，
 
-1:	如果`setOnTouchListener`中的`onTouch`方法返回`true`的话，那么View里面的`onTouchEvent`方法就不会被调用了。
-    
-顺序：View-`dispatchTouchEvent`--`onTouchListener`---return false的话调用---`onTouchEvent`
+从`dispatchTouchEvent` 和`onTouchEvent()`方法可以看出。
 
-2: 如果View为Disabled。则：`OntouchListener`里面的方法不会执行。但是会执行`OnTouchEvent(event)`方法
+1	事件的调度顺序为：
+onTouchListener > onTouchEvent > onLongClickListener > onClickListener
 
-3： onTouchEvent方法中的ACTION_UP分支中触发onClick方法。
+2: 如果View为Disabled。则：`OntouchListener`里面的方法不会执行。但是会执行`OnTouchEvent(event)`方法，也就是说即使view是disabled的，依然可以相应onClick事件。
+
+3： onTouchEvent方法中的ACTION_UP分支中触发onClick方法。并在这里移除长按监听。因为长按不需要处理ACTION_UP事件。
