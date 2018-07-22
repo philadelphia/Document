@@ -41,13 +41,13 @@ inflate()方法一般接收两个参数，第一个参数就是要加载的布�
 
 该三个参数的方法的实现为：
 	 
-{% codeblock  %}	
+
 
 public View inflate(@LayoutRes int resource, @Nullable ViewGroup root) {
    return inflate(resource, root, root != null);
  }
 
-{% endcodeblock %}
+
 
 也就是说不管你是使用的哪个inflate()方法的重载，最终都会辗转调用到LayoutInflater的如下代码中
 
