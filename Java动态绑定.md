@@ -98,7 +98,7 @@ fruit.say();
 
 从代码可以看出编译时类型与运行时类型一致，这是不会发生动态绑定的，这时可以从编译后的class文件得出验证。
 
-JAVA的PECS原则
+## JAVA的PECS原则
 
 PECS指“Producer Extends，Consumer Super”
 
