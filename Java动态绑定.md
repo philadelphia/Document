@@ -98,7 +98,7 @@ fruit.say();
 
 从代码可以看出编译时类型与运行时类型一致，这是不会发生动态绑定的，这时可以从编译后的class文件得出验证。
 
-明白了这个事情，我们可以很容易的额理解Java泛型的PECS原则
+JAVA的PECS原则
 
 PECS指“Producer Extends，Consumer Super”
 
@@ -112,9 +112,9 @@ fruitList.add(new Orange());
 
 但是编译器却报了编译错误：
 
-按理说fruitList是一个持有类型为Fruit及其子类的泛型列表啊，为什么不能往其中添加Fruit的子类呢。这就涉及到编译时类型与运行时类型了。
+按理说fruitList是一个持有类型为Fruit及其子类的泛型列表啊，为什么不能往其中添加Fruit的子类呢？
 
-因为泛型的编译时擦除特性导致编译后fruitList不知道自己持有的具体的泛型类型，
+因为泛型的一大好处就是可以在编译时检查，避免传入不相符的类型可能导致的ClassCastException了。但是声明fruitList的时候没有明确的指定泛型的具体类型，所以编译器无法确认其持有的具体类型，当然也就拒绝了add操作。
 
 fruitList只是规定了泛型的上限，但是并没有确定具体的类型，也无法确定具体的子类型，可以是Apple，Orange还可能是Banana,所以不能把具体的对象添加进去，不然使用的时候可能导致ClassCastException了。但是可以保证从里面取出来的数据都是Fruit及其子类，而且还是Fruit的某一个子类。
 
