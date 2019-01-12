@@ -1,5 +1,3 @@
-## 
-
 # 简介
 
 retrofit是square出品的一个优秀的网络框架，注意，不是一个网络引擎。它的定位和Volley是一样的。
@@ -1375,7 +1373,7 @@ static final class Body<T> extends ParameterHandler<T> {
 
 ### @RawPart
 
-### @RawPart
+### @PartMap
 
 以上三个注解都是使用修饰上传文件的参数的，
 
@@ -1385,9 +1383,7 @@ static final class Body<T> extends ParameterHandler<T> {
 
 这里又引入了RequestBuilder类
 
-### RequestBuilder
-
-
+# RequestBuilder
 
 ```java
 final class RequestBuilder {
@@ -1397,17 +1393,17 @@ final class RequestBuilder {
 
   private final String method; //方法类型
 
-  private final HttpUrl baseUrl;
-  private String relativeUrl;
-  private HttpUrl.Builder urlBuilder;
+  private final HttpUrl baseUrl; //scheme+host
+  private String relativeUrl; 	//相对路径
+  private HttpUrl.Builder urlBuilder; //URL构造器
 
-  private final Request.Builder requestBuilder;
-  private MediaType contentType;
+  private final Request.Builder requestBuilder; //OkHttp中Request构造器
+  private MediaType contentType;		//提交表单的数据类型
 
-  private final boolean hasBody;
-  private MultipartBody.Builder multipartBuilder;
-  private FormBody.Builder formBuilder;
-  private RequestBody body;
+  private final boolean hasBody;		//是否有请求体
+  private MultipartBody.Builder multipartBuilder; //上传文件的构造器
+  private FormBody.Builder formBuilder;				//表单数据的构造器
+  private RequestBody body;							//请求体
 
   RequestBuilder(String method, HttpUrl baseUrl, String relativeUrl, Headers headers,
       MediaType contentType, boolean hasBody, boolean isFormEncoded, boolean isMultipart) {
@@ -1580,6 +1576,7 @@ final class RequestBuilder {
       }
     }
 
+    //生成一个Request对象
     return requestBuilder
         .url(url)
         .method(method, body)
@@ -1620,6 +1617,37 @@ OkHttpCall okHttpCall = new OkHttpCall<>(serviceMethod, args);
 
 在创建了ServiceMethod对象后，使用该ServiceMethod对象和其参数创建一个OKHttPCall对象
 
+```java
+OkHttpCall okHttpCall = new OkHttpCall<>(serviceMethod, args);
+```
+
+在合适的时候调用ServiceMethod对象的toRequest方法生成一个Request对象，toReques()的内部实现就是调用RequestBuilder对象的build方法。
+
+```
+/** Builds an HTTP request from method arguments. */
+Request toRequest(Object... args) throws IOException {
+  RequestBuilder requestBuilder = new RequestBuilder(httpMethod, baseUrl, relativeUrl, headers,
+      contentType, hasBody, isFormEncoded, isMultipart);
+
+  @SuppressWarnings("unchecked") // It is an error to invoke a method with the wrong arg types.
+  ParameterHandler<Object>[] handlers = (ParameterHandler<Object>[]) parameterHandlers;
+
+  int argumentCount = args != null ? args.length : 0;
+  if (argumentCount != handlers.length) {
+    throw new IllegalArgumentException("Argument count (" + argumentCount
+        + ") doesn't match expected count (" + handlers.length + ")");
+  }
+
+  for (int p = 0; p < argumentCount; p++) {
+    handlers[p].apply(requestBuilder, args[p]);
+  }
+
+  return requestBuilder.build();
+}
+```
+
+
+
 OkHttpCall 实现了Call接口，这个Call接口和OkHttp中的Call接口一样，毕竟一家公司嘛。
 
 其实就是对OkHttpCall 做了一层包装。
@@ -1632,5 +1660,47 @@ return serviceMethod.callAdapter.adapt(okHttpCall);
 
 返回接口中方法定义的返回值。
 
+这块的流程就是构造一个OKHttp对象需要使用ServiceMethod对象和相应的参数。
 
+```
+OkHttpCall okHttpCall = new OkHttpCall<>(serviceMethod, args);
+```
+
+最后创建具体的Call对象时
+
+```java
+private okhttp3.Call createRawCall() throws IOException {
+  Request request = serviceMethod.toRequest(args);
+  okhttp3.Call call = serviceMethod.callFactory.newCall(request);
+  if (call == null) {
+    throw new NullPointerException("Call.Factory returned null.");
+  }
+  return call;
+}
+```
+
+调用了ServiceMethod对象的toRequest方法，然后使用这个request对象创建了一个Call对象。
+
+```java
+/** Builds an HTTP request from method arguments. */
+Request toRequest(Object... args) throws IOException {
+  RequestBuilder requestBuilder = new RequestBuilder(httpMethod, baseUrl, relativeUrl, headers,
+      contentType, hasBody, isFormEncoded, isMultipart);
+
+  @SuppressWarnings("unchecked") // It is an error to invoke a method with the wrong arg types.
+  ParameterHandler<Object>[] handlers = (ParameterHandler<Object>[]) parameterHandlers;
+
+  int argumentCount = args != null ? args.length : 0;
+  if (argumentCount != handlers.length) {
+    throw new IllegalArgumentException("Argument count (" + argumentCount
+        + ") doesn't match expected count (" + handlers.length + ")");
+  }
+
+  for (int p = 0; p < argumentCount; p++) {
+    handlers[p].apply(requestBuilder, args[p]);
+  }
+//生成一个Request对象
+  return requestBuilder.build();
+}
+```
 
