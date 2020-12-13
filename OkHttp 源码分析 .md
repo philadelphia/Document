@@ -6,7 +6,13 @@ OkHttp 源码分析
 implementation("com.squareup.okhttp3:okhttp:3.11.0")
 ```
 
-网络框架的核心思想都是构建基本的执行单元之后(1)，根据任务类型放入对应的任务队列里(2)，再由线程池去执行(3)。OKHttp也不列外。
+网络框架的核心思想基本都是：
+
+1. 构建基本的执行单元之后
+2. 根据任务类型放入对应的任务队列里
+3. 再由线程池去执行。
+
+OKHttp也不例外。
 
 
 
@@ -53,42 +59,11 @@ Request post = new Request.Builder().url("www.baidu.com")
 
 # 执行
 
-## 1：同步执行
+## 1：构建Call对象
 
-```Java
-try {
-    Response response = okHttpClient.newCall(post).execute();
-    if (response.code() ==  200){
-     	 }
-
-} catch (IOException e) {
-
-}
 ```
-
-然后就可以根据response的结果操作了。
-
-## 2：异步执行
-
-```java
-okHttpClient.newCall(request).enqueue(new Callback() {
-    @Override
-    public void onFailure(Call call, IOException e) {
-        
-    }
-
-    @Override
-    public void onResponse(Call call, Response response) throws IOException {
-
-    }
-});
+Call call =	okHttpClient.newCall(request)
 ```
-
-在对应的回调函数里做对应的业务逻辑。
-
-以上就是OKHttp的使用的基本使用。
-
-
 
 这里Request就是请求单元,不论是同步执行还是异步执行，都调用okHttpClient.newCall(request) 生成了一个RealCall对象，然后分别调用该对象的execute(同步执行)方法或者enqueue(异步执行)方法。
 
@@ -118,7 +93,21 @@ private RealCall(OkHttpClient client, Request originalRequest, boolean forWebSoc
 }
 ```
 
-可以看到，newRealCall方法将client作为自己构造函数的参数传入
+可以看到，newRealCall方法将client作为自己构造函数的参数传入,即每个Call对象都持有Client的引用。
+
+## 2：执行
+
+### 1：同步执行
+
+```Java
+try {
+    Response response = okHttpClient.newCall(post).execute();
+    if (response.code() ==  200){
+     	 }
+} catch (IOException e) {
+
+}
+```
 
 下面这个方法是RealCall对象的execute方法
 
@@ -179,30 +168,32 @@ public final class Dispatcher {
 
 ```
 synchronized void executed(RealCall call) {
-  runningSyncCalls.add(call);
+ //将改call假如同步执行队列中
+ runningSyncCalls.add(call);
 }
 ```
 
-将改call假如同步执行队列中。
+
+
+### 2：异步执行
+
+```java
+okHttpClient.newCall(request).enqueue(new Callback() {
+    @Override
+    public void onFailure(Call call, IOException e) {
+        
+    }
+
+    @Override
+    public void onResponse(Call call, Response response) throws IOException {
+
+    }
+});
+```
+
+将callBack对象包装成一个AsyncCall对象加入到Dispatcher.
 
 ```
-synchronized void enqueue(AsyncCall call) {
-  if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(call) < maxRequestsPerHost) {
-    runningAsyncCalls.add(call);
-    executorService().execute(call);
-  } else {
-    readyAsyncCalls.add(call);
-  }
-}
-```
-
-异步执行方法是先进行判断，只有正在执行的异步任务队列长度小于了最大的请求数并且改请求的主机的正在请求数量小于每个主句的同时的最大连接数世才将改请求加入到正在执行的异步任务队列里，然后由具体的执行任务来执行这个请求任务。
-
-不然就把这个任务加入到待执行的异步执行队队列。
-
-这里RealCall 对象突然就变成了一个AsyncCall对象
-
-```Java
 @Override public void enqueue(Callback responseCallback) {
   synchronized (this) {
     if (executed) throw new IllegalStateException("Already Executed");
@@ -211,6 +202,21 @@ synchronized void enqueue(AsyncCall call) {
   captureCallStackTrace();
   eventListener.callStart(this);
   client.dispatcher().enqueue(new AsyncCall(responseCallback));
+}
+```
+
+将AsyncCall对象交给Dispatcher对象执行。
+
+```
+synchronized void enqueue(AsyncCall call) {
+	//首先判断当前的异步任务是否大于最大的异步任务数量（默认64） && 当前call对象的连接主机的访问数量是否大于主机支持的最大访问量（默认是5），如果同时满足以上两个条件，则将任务加到runningAsyncCalls
+	如果不满足这两个条件中的任一个，则将异步任务加入到待执行队列里。
+  if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(call) < maxRequestsPerHost) {
+    runningAsyncCalls.add(call);
+    executorService().execute(call);
+  } else {
+    readyAsyncCalls.add(call);
+  }
 }
 ```
 
@@ -229,35 +235,11 @@ final class AsyncCall extends NamedRunnable {
 
 Async对象其实继承了NamedRunnable。而NamedRunnable实现了Runnable接口，可以看出其实Async其实就是一个命名后的runnable对象。
 
-这里把RealCall同步执行和异步执行的代码列出来
-
-1：同步执行
-
-```Java
-@Override public Response execute() throws IOException {
-  synchronized (this) {
-    if (executed) throw new IllegalStateException("Already Executed");
-    executed = true;
-  }
-  captureCallStackTrace();
-  eventListener.callStart(this);
-  try {
-    client.dispatcher().executed(this);
-    Response result = getResponseWithInterceptorChain();
-    if (result == null) throw new IOException("Canceled");
-    return result;
-  } catch (IOException e) {
-    eventListener.callFailed(this, e);
-    throw e;
-  } finally {
-    client.dispatcher().finished(this);
-  }
-}
+```
+client.dispatcher().enqueue(new AsyncCall(responseCallback));
 ```
 
-
-
-2：异步执行
+加入到Dispatcher中，最后交给Dispatcher中的executorService来执行该任务。
 
 最终调用AsyncCall对象的execute方法
 
